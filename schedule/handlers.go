@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
 )
 
 var passSchedule Schedule
@@ -22,8 +21,7 @@ func PassesHandleFunc(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		pass := FromJSON(body)
-		passSchedule = append(passSchedule, pass)
-		sort.Sort(passSchedule)
+		passSchedule.AddPass(pass)
 		fmt.Println(passSchedule)
 		fmt.Println()
 	default:

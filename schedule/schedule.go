@@ -1,7 +1,9 @@
 package schedule
 
 import (
-	"fmt"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // Schedule stores a list of TrackingPass objects
@@ -22,7 +24,26 @@ func (s Schedule) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-// TODO: fix
+// TODO: make prettier print later
 func (s Schedule) String() string {
-	return fmt.Sprintf("")
+	var table strings.Builder
+	for i, pass := range s {
+		table.WriteString(strconv.Itoa(i) + ": " + pass.String())
+		if i == len(s)-1 {
+			continue
+		}
+		table.WriteRune('\n')
+	}
+	return table.String()
+}
+
+// AddPass adds a TrackingPass struct to a Schedule struct by performing a
+// binary search and inserting into the Schedule by start time
+func (s *Schedule) AddPass(t TrackingPass) {
+	// *s = append(*s, t)
+	// sort.Sort(*s)
+	idx := sort.Search(len(*s), func(i int) bool { return (*s)[i].Times[0].After(t.Times[0]) })
+	*s = append(*s, TrackingPass{})
+	copy((*s)[idx+1:], (*s)[idx:])
+	(*s)[idx] = t
 }
