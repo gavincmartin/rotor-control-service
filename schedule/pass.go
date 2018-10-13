@@ -3,6 +3,7 @@ package schedule
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/globalsign/mgo/bson"
 	"time"
 	"tutorials/rotor-controller/rotor"
 )
@@ -10,7 +11,7 @@ import (
 // TrackingPass type stores a spacecraft, ID, states and times for a given
 // communications pass
 type TrackingPass struct {
-	ID         int64
+	ID         bson.ObjectId
 	Spacecraft string
 	Times      []time.Time
 	States     []rotor.State
@@ -53,11 +54,11 @@ func (t TrackingPass) toPassInfo() PassInfo {
 // PassInfo stores information related to a TrackingPass in a JSON-friendly
 // format (rather than a Go-friendly format). It is used to change between the two.
 type PassInfo struct {
-	ID         int64
-	Spacecraft string    `json:"spacecraft"`
-	Times      []float64 `json:"times"`
-	Azimuths   []float64 `json:"azimuths"`
-	Elevations []float64 `json:"elevations"`
+	ID         bson.ObjectId
+	Spacecraft string    `json:"spacecraft" bson:"spacecraft"`
+	Times      []float64 `json:"times" bson:"times"`
+	Azimuths   []float64 `json:"azimuths" bson:"azimuths"`
+	Elevations []float64 `json:"elevations" bson:"elevations"`
 }
 
 // ToTrackingPass converts a PassInfo struct into a TrackingPass struct

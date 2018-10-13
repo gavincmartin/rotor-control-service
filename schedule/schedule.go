@@ -1,10 +1,46 @@
 package schedule
 
 import (
+	"log"
 	"sort"
 	"strconv"
 	"strings"
+
+	mgo "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
+
+type PassesDAO struct {
+	Server   string
+	Database string
+}
+
+var db *mgo.Database
+
+const (
+	COLLECTION = "passes"
+)
+
+func (p *PassesDAO) Connect() {
+	session, err := mgo.Dial(p.Server)
+	if err != nil {
+		log.Fatal(err)
+	}
+	db = session.DB(p.Database)
+}
+
+func (p *PassesDAO) FindAll() ([]TrackingPass, error) {
+	var passes []TrackingPass
+	err := db.C(COLLECTION).Find(bson.M{}).All(&passes)
+	return passes, err
+}
+
+func (p *PassesDAO) Insert(pass TrackingPass) error {
+	err := db.C(COLLECTION).Insert(&pass)
+	return err
+}
+
+////////////////////////
 
 // Schedule stores a list of TrackingPass objects
 type Schedule []TrackingPass

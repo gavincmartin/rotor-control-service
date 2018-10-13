@@ -13,21 +13,12 @@ type Rotor struct {
 
 // State type that stores an azimuth and elevation
 type State struct {
-	Az float64 `json:"azimuth"`
-	El float64 `json:"elevation"`
-}
-
-// ToJSON used for marshalling of the State type
-func (s State) ToJSON() []byte {
-	jsonData, err := json.Marshal(s)
-	if err != nil {
-		panic(err)
-	}
-	return jsonData
+	Az float64 `json:"azimuth" bson:"azimuth"`
+	El float64 `json:"elevation" bson:"elevation"`
 }
 
 // FromJSON used for unmarshalling of the State type
-func FromJSON(data []byte) State {
+func StateFromJSON(data []byte) State {
 	s := State{}
 	err := json.Unmarshal(data, &s)
 	if err != nil {
@@ -36,7 +27,7 @@ func FromJSON(data []byte) State {
 	return s
 }
 
-// Rotate used for rotating the Rotor
+// Rotate used for rotating the Rotor to a desired state
 func (r *Rotor) Rotate(s State) {
 	// TODO: need to add actual rotation stuff here
 
