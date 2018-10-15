@@ -77,20 +77,19 @@ func GetPassesEndpoint(w http.ResponseWriter, r *http.Request) {
 			query["spacecraft"] = val[0]
 		}
 
-		start, startDefined := q["after"]
-		end, endDefined := q["before"]
+		start, startDefined := q["from"]
+		end, endDefined := q["to"]
 		if startDefined && endDefined {
 			s, _ := time.Parse(time.RFC3339, start[0])
 			e, _ := time.Parse(time.RFC3339, end[0])
-			query["start_time"] = bson.M{"$gt": s, "$lt": e}
+			query["start_time"] = bson.M{"$gte": s, "$lte": e}
 		} else if startDefined {
 			s, _ := time.Parse(time.RFC3339, start[0])
-			query["start_time"] = bson.M{"$gt": s}
+			query["start_time"] = bson.M{"$gte": s}
 		} else if endDefined {
 			e, _ := time.Parse(time.RFC3339, end[0])
-			query["start_time"] = bson.M{"$lt": e}
+			query["start_time"] = bson.M{"$lte": e}
 		}
-
 		results, err = db.FindByQuery(query)
 	}
 	if err != nil {
