@@ -51,11 +51,12 @@ func (d *DAO) FindByID(id string) (TrackingPass, error) {
 	return pass, err
 }
 
-// FindBySpacecraft finds TrackingPass structs associated with a given
-// spacecraft and returns them in order of start date/time
-func (d *DAO) FindBySpacecraft(spacecraft string) ([]TrackingPass, error) {
+// FindByQuery finds TrackingPass structs associated with a given
+// MongoDB query (see https://docs.mongodb.com/manual/tutorial/query-documents/
+// for additional information)
+func (d *DAO) FindByQuery(query bson.M) ([]TrackingPass, error) {
 	var passes []TrackingPass
-	err := db.C(COLLECTION).Find(bson.M{"spacecraft": spacecraft}).Sort("start_time").All(&passes)
+	err := db.C(COLLECTION).Find(query).Sort("start_time").All(&passes)
 	return passes, err
 }
 

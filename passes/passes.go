@@ -19,7 +19,7 @@ type TrackingPass struct {
 }
 
 func (t TrackingPass) String() string {
-	return fmt.Sprintf("S/C: %v | Start: %v | End %v | ID: %v", t.Spacecraft, t.Times[0], t.Times[len(t.Times)-1], t.ID)
+	return fmt.Sprintf("S/C: %v | Start: %v | End %v | ID: %v", t.Spacecraft, t.Times[0], t.Times[len(t.Times)-1], t.ID.Hex())
 }
 
 // ToJSON marhsals a TrackingPass struct into JSON format

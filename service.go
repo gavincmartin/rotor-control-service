@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 	"tutorials/rotor-controller/config"
 	"tutorials/rotor-controller/passes"
 	"tutorials/rotor-controller/rotor"
@@ -69,13 +70,28 @@ func GetPassesEndpoint(w http.ResponseWriter, r *http.Request) {
 	var results interface{}
 	if len(q) == 0 {
 		results, err = db.FindAll()
-	} else if val, ok := q["id"]; ok {
-		results, err = db.FindByID(val[0])
-	} else if val, ok := q["spacecraft"]; ok {
-		results, err = db.FindBySpacecraft(val[0])
 	} else {
-		w.WriteHeader(http.StatusNotImplemented)
-		return
+		// Build the query
+		var query bson.M = make(bson.M)
+		if val, ok := q["spacecraft"]; ok {
+			query["spacecraft"] = val[0]
+		}
+
+		start, startDefined := q["after"]
+		end, endDefined := q["before"]
+		if startDefined && endDefined {
+			s, _ := time.Parse(time.RFC3339, start[0])
+			e, _ := time.Parse(time.RFC3339, end[0])
+			query["start_time"] = bson.M{"$gt": s, "$lt": e}
+		} else if startDefined {
+			s, _ := time.Parse(time.RFC3339, start[0])
+			query["start_time"] = bson.M{"$gt": s}
+		} else if endDefined {
+			e, _ := time.Parse(time.RFC3339, end[0])
+			query["start_time"] = bson.M{"$lt": e}
+		}
+
+		results, err = db.FindByQuery(query)
 	}
 	if err != nil {
 		panic(err)
