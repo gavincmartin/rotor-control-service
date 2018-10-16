@@ -19,14 +19,14 @@ var rotctl = rotor.Rotor{State: rotor.State{Az: 0.0, El: 0.0}}
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/rotor", GetRotorStateEndpoint).Methods("GET")
-	r.HandleFunc("/rotor", SetRotorStateEndpoint).Methods("POST")
-	r.HandleFunc("/passes", GetPassesEndpoint).Methods("GET")
-	r.HandleFunc("/passes", AddPassEndpoint).Methods("POST")
-	r.HandleFunc("/passes/{id}", GetPassByIDEndpoint).Methods("GET")
-	r.HandleFunc("/passes/{id}", UpdatePassEndpoint).Methods("PUT")
-	r.HandleFunc("/passes/{id}", DeletePassEndpoint).Methods("DELETE")
-	r.HandleFunc("/test", TestEndpoint).Methods("GET")
+	r.HandleFunc("/api/rotor", GetRotorStateEndpoint).Methods("GET")
+	r.HandleFunc("/api/rotor", SetRotorStateEndpoint).Methods("POST")
+	r.HandleFunc("/api/passes", GetPassesEndpoint).Methods("GET")
+	r.HandleFunc("/api/passes", AddPassEndpoint).Methods("POST")
+	r.HandleFunc("/api/passes/{id}", GetPassByIDEndpoint).Methods("GET")
+	r.HandleFunc("/api/passes/{id}", UpdatePassEndpoint).Methods("PUT")
+	r.HandleFunc("/api/passes/{id}", DeletePassEndpoint).Methods("DELETE")
+	r.HandleFunc("/api/test", TestEndpoint).Methods("GET")
 	http.ListenAndServe(port(), r)
 }
 
