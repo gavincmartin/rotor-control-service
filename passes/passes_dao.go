@@ -4,6 +4,7 @@ import (
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"log"
+	"time"
 )
 
 // DAO is the data access object for interacting with TrackingPass structs
@@ -58,6 +59,14 @@ func (d *DAO) FindByQuery(query bson.M) ([]TrackingPass, error) {
 	var passes []TrackingPass
 	err := db.C(COLLECTION).Find(query).Sort("start_time").All(&passes)
 	return passes, err
+}
+
+// GetNextPass retrieves the next TrackingPass (the closest in the future)
+func (d *DAO) GetNextPass() (TrackingPass, error) {
+	t := time.Now()
+	var passes []TrackingPass
+	err := db.C(COLLECTION).Find(bson.M{"start_time": bson.M{"$gte": t}}).Sort("start_time").All(&passes)
+	return passes[0], err
 }
 
 // Delete removes a TrackingPass from MongoDB

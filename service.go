@@ -26,6 +26,7 @@ func main() {
 	r.HandleFunc("/passes/{id}", GetPassByIDEndpoint).Methods("GET")
 	r.HandleFunc("/passes/{id}", UpdatePassEndpoint).Methods("PUT")
 	r.HandleFunc("/passes/{id}", DeletePassEndpoint).Methods("DELETE")
+	r.HandleFunc("/test", TestEndpoint).Methods("GET")
 	http.ListenAndServe(port(), r)
 }
 
@@ -44,6 +45,15 @@ func port() string {
 		port = "8080"
 	}
 	return ":" + port
+}
+
+// TestEndpoint allows me to test methods' behavior
+func TestEndpoint(w http.ResponseWriter, r *http.Request) {
+	p, err := db.GetNextPass()
+	if err != nil {
+		panic(err)
+	}
+	respondWithJSON(w, http.StatusOK, p)
 }
 
 // GetRotorStateEndpoint delivers the Rotor's State upon a GET request
