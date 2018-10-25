@@ -123,7 +123,7 @@ func AddPassEndpoint(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	w.Header().Add("Location", "/schedule/"+pass.ID.Hex())
+	w.Header().Add("Location", "/passes/"+pass.ID.Hex())
 	respondWithJSON(w, http.StatusCreated, pass)
 }
 
