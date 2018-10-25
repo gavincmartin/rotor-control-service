@@ -1,2 +1,2 @@
-server="localhost"
-database="movies_db"
+server="mongodb"
+database="tracking_passes_db"

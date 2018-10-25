@@ -1,0 +1,17 @@
+version: '2'
+services:
+  rotor-control-service:
+    build: .
+    container_name: "rotor-control-service"
+    image: rotor-control-service:0.1
+    environment:
+    - PORT=8080
+    ports:
+    - "8080:8080"
+  mongo:
+    image: "mongo"
+    container_name: "mongodb"
+    ports:
+    - "27017:27017"
+    links:
+    - rotor-control-service
