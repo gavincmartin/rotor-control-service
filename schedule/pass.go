@@ -3,9 +3,9 @@ package schedule
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gavincmartin/rotor-control-service/rotor"
 	"github.com/globalsign/mgo/bson"
 	"time"
-	"tutorials/rotor-controller/rotor"
 )
 
 // TrackingPass type stores a spacecraft, ID, states and times for a given

@@ -1,9 +1,9 @@
 package executor
 
 import (
+	"github.com/gavincmartin/rotor-control-service/passes"
+	"github.com/gavincmartin/rotor-control-service/rotor"
 	"time"
-	"tutorials/rotor-controller/passes"
-	"tutorials/rotor-controller/rotor"
 )
 
 type Executor struct {

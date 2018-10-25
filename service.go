@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gavincmartin/rotor-control-service/config"
+	"github.com/gavincmartin/rotor-control-service/passes"
+	"github.com/gavincmartin/rotor-control-service/rotor"
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
-	"tutorials/rotor-controller/config"
-	"tutorials/rotor-controller/passes"
-	"tutorials/rotor-controller/rotor"
 )
 
 var cfg = config.Config{}
