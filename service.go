@@ -69,7 +69,7 @@ func TestEndpoint(w http.ResponseWriter, r *http.Request) {
 
 // GetRotorStateEndpoint delivers the Rotor's State upon a GET request
 func GetRotorStateEndpoint(w http.ResponseWriter, r *http.Request) {
-	respondWithJSON(w, http.StatusOK, rotctl)
+	safeRespondWithJSON(w, http.StatusOK, &rotctl)
 }
 
 // SetRotorStateEndpoint alters the Rotor's State upon a POST request
@@ -195,6 +195,19 @@ func respondWithJSON(w http.ResponseWriter, code int, i interface{}) {
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	w.Write(b)
+}
+
+func safeRespondWithJSON(w http.ResponseWriter, code int, i JSONMarshallable) {
+	b := i.ToJSON()
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	w.Write(b)
+}
+
+// JSONMarshallable interface is for types with the method ToJSON (used
+// for concurrency-safe JSON marshalling)
+type JSONMarshallable interface {
+	ToJSON() []byte
 }
 
 func sendUpdate() {

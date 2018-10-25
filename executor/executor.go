@@ -76,7 +76,7 @@ func (e *Executor) TrackPass(pass passes.TrackingPass) error {
 				idxNextTime++
 			}
 			targetState := interpolateState(pass.States[idxNextTime], pass.States[idxNextTime-1], pass.Times[idxNextTime], pass.Times[idxNextTime-1], now)
-			if math.Abs(targetState.Az-e.Rotctl.Az) > 1.0 || math.Abs(targetState.El-e.Rotctl.El) > 1.0 {
+			if math.Abs(targetState.Az-e.Rotctl.GetAz()) > 1.0 || math.Abs(targetState.El-e.Rotctl.GetEl()) > 1.0 {
 				e.Rotctl.Rotate(targetState)
 			} else {
 				time.Sleep(1 * time.Second)

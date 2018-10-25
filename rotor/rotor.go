@@ -2,13 +2,14 @@ package rotor
 
 import (
 	"encoding/json"
-	"fmt"
 	"math"
+	"sync"
 	"time"
 )
 
 // Rotor type that stores the current state and rotates
 type Rotor struct {
+	mu sync.RWMutex
 	State
 }
 
@@ -28,10 +29,19 @@ func StateFromJSON(data []byte) State {
 	return s
 }
 
-// Rotate used for rotating the Rotor to a desired state
-func (r *Rotor) Rotate(s State) {
+// ToJSON used for marshalling the Rotor type (in a concurrency-safe way)
+func (r *Rotor) ToJSON() []byte {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	jsonData, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return jsonData
+}
+
+func (r *Rotor) rotate(s State) {
 	// TODO: need to add actual rotation stuff here
-	fmt.Printf("Rotating from %v to %v\n", r, s)
 
 	deltaAz := math.Copysign(0.1, s.Az-r.Az)
 	for a := r.Az; a <= s.Az; a += deltaAz {
@@ -44,4 +54,25 @@ func (r *Rotor) Rotate(s State) {
 		time.Sleep(10 * time.Millisecond)
 		r.El = e
 	}
+}
+
+// Rotate used for rotating the Rotor to a desired state
+func (r *Rotor) Rotate(s State) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.rotate(s)
+}
+
+// GetAz is a concurrency-safe retreival method for the current azimuth of the Rotor
+func (r *Rotor) GetAz() float64 {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.Az
+}
+
+// GetEl is a concurrency-safe retreival method for the current elevation of the Rotor
+func (r *Rotor) GetEl() float64 {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.El
 }
