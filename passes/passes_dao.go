@@ -66,6 +66,9 @@ func (d *DAO) GetNextPass() (TrackingPass, error) {
 	t := time.Now()
 	var passes []TrackingPass
 	err := db.C(COLLECTION).Find(bson.M{"start_time": bson.M{"$gte": t}}).Sort("start_time").All(&passes)
+	if len(passes) == 0 {
+		return TrackingPass{}, err
+	}
 	return passes[0], err
 }
 

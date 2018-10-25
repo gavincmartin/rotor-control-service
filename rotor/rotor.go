@@ -2,6 +2,7 @@ package rotor
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"time"
 )
@@ -17,7 +18,7 @@ type State struct {
 	El float64 `json:"elevation" bson:"elevation"`
 }
 
-// FromJSON used for unmarshalling of the State type
+// StateFromJSON used for unmarshalling of the State type
 func StateFromJSON(data []byte) State {
 	s := State{}
 	err := json.Unmarshal(data, &s)
@@ -30,6 +31,7 @@ func StateFromJSON(data []byte) State {
 // Rotate used for rotating the Rotor to a desired state
 func (r *Rotor) Rotate(s State) {
 	// TODO: need to add actual rotation stuff here
+	fmt.Printf("Rotating from %v to %v\n", r, s)
 
 	deltaAz := math.Copysign(0.1, s.Az-r.Az)
 	for a := r.Az; a <= s.Az; a += deltaAz {

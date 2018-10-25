@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gavincmartin/rotor-control-service/config"
+	"github.com/gavincmartin/rotor-control-service/executor"
 	"github.com/gavincmartin/rotor-control-service/passes"
 	"github.com/gavincmartin/rotor-control-service/rotor"
 	"github.com/globalsign/mgo/bson"
@@ -13,9 +14,14 @@ import (
 	"time"
 )
 
-var cfg = config.Config{}
-var db = passes.DAO{}
-var rotctl = rotor.Rotor{State: rotor.State{Az: 0.0, El: 0.0}}
+var (
+	cfg           = config.Config{}
+	db            = passes.DAO{}
+	rotctl        = rotor.Rotor{State: rotor.State{Az: 0.0, El: 0.0}}
+	updates       = make(chan struct{})
+	abortCommands = make(chan struct{})
+	passTracker   executor.Executor
+)
 
 func main() {
 	r := mux.NewRouter()
@@ -37,6 +43,14 @@ func init() {
 	db.Server = cfg.Server
 	db.Database = cfg.Database
 	db.Connect()
+
+	nextPass, err := db.GetNextPass()
+	if err != nil {
+		panic(err)
+	}
+
+	passTracker = executor.Executor{Rotctl: &rotctl, DB: db, Updates: updates, AbortCommands: abortCommands, NextPass: nextPass}
+	go passTracker.Run()
 }
 
 func port() string {
@@ -49,11 +63,8 @@ func port() string {
 
 // TestEndpoint allows me to test methods' behavior
 func TestEndpoint(w http.ResponseWriter, r *http.Request) {
-	p, err := db.GetNextPass()
-	if err != nil {
-		panic(err)
-	}
-	respondWithJSON(w, http.StatusOK, p)
+	abortPass()
+	w.WriteHeader(http.StatusOK)
 }
 
 // GetRotorStateEndpoint delivers the Rotor's State upon a GET request
@@ -125,6 +136,7 @@ func AddPassEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Location", "/passes/"+pass.ID.Hex())
 	respondWithJSON(w, http.StatusCreated, pass)
+	go sendUpdate()
 }
 
 // GetPassByIDEndpoint retrieves a specific TrackingPass from MongoDB by ID
@@ -155,6 +167,7 @@ func UpdatePassEndpoint(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	respondWithJSON(w, http.StatusOK, pass)
+	go sendUpdate()
 }
 
 // DeletePassEndpoint deletes a specific TrackingPass in MongoDB upon a DEL request
@@ -171,6 +184,7 @@ func DeletePassEndpoint(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	w.WriteHeader(http.StatusNoContent)
+	go sendUpdate()
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, i interface{}) {
@@ -181,4 +195,14 @@ func respondWithJSON(w http.ResponseWriter, code int, i interface{}) {
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	w.Write(b)
+}
+
+func sendUpdate() {
+	updates <- struct{}{}
+}
+
+func abortPass() {
+	if passTracker.Engaged {
+		abortCommands <- struct{}{}
+	}
 }
