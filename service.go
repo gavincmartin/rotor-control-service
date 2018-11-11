@@ -4,20 +4,19 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
+	"strconv"
 	"time"
 
-	"github.com/gavincmartin/rotor-control-service/config"
 	"github.com/gavincmartin/rotor-control-service/executor"
 	"github.com/gavincmartin/rotor-control-service/integrations"
 	"github.com/gavincmartin/rotor-control-service/passes"
 	"github.com/gavincmartin/rotor-control-service/rotor"
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 )
 
 var (
-	cfg           = config.Config{}
 	db            = passes.DAO{}
 	rotctl        = rotor.Rotor{State: rotor.State{Az: 0.0, El: 0.0}}
 	updates       = make(chan struct{})
@@ -35,15 +34,22 @@ func main() {
 	r.HandleFunc("/api/passes/{id}", UpdatePassEndpoint).Methods("PUT")
 	r.HandleFunc("/api/passes/{id}", DeletePassEndpoint).Methods("DELETE")
 	r.HandleFunc("/api/test", TestEndpoint).Methods("GET")
-	http.ListenAndServe(port(), r)
+	http.ListenAndServe(":"+strconv.Itoa(viper.GetInt("Port")), r)
 }
 
-// Parse the configuration file 'config.toml', and establish a connection to DB
+// Retrieve configuration options and establish a connection to DB
 func init() {
-	cfg.Read()
+	viper.SetDefault("MongoServer", "localhost")
+	viper.BindEnv("MongoServer", "MONGO_SERVER")
+	viper.SetDefault("MongoDatabaseName", "tracking_passes_db")
+	viper.BindEnv("MongoDatabaseName", "MONGO_DB_NAME")
+	viper.SetDefault("Port", 8080)
+	viper.BindEnv("Port", "PORT")
+	viper.SetDefault("SlackPOSTUrl", "")
+	viper.BindEnv("SlackPOSTUrl", "SLACK_POST_URL")
 
-	db.Server = cfg.Server
-	db.Database = cfg.Database
+	db.Server = viper.GetString("MongoServer")
+	db.Database = viper.GetString("MongoDatabaseName")
 	db.Connect()
 
 	nextPass, err := db.GetNextPass()
@@ -53,14 +59,6 @@ func init() {
 
 	passTracker = executor.Executor{Rotctl: &rotctl, DB: db, Updates: updates, AbortCommands: abortCommands, NextPass: nextPass}
 	go passTracker.Run()
-}
-
-func port() string {
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
-		port = "8080"
-	}
-	return ":" + port
 }
 
 // TestEndpoint allows me to test methods' behavior

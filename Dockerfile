@@ -21,7 +21,6 @@ MAINTAINER Gavin C. Martin
 
 # Copy our static executable
 COPY --from=builder /go/bin/rotor-control-service /app/rotor-control-service
-COPY config.toml /app/
 
 WORKDIR /app
 ENTRYPOINT ["./rotor-control-service"]

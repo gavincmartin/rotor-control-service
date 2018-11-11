@@ -6,6 +6,9 @@ services:
     image: rotor-control-service:0.1
     environment:
     - PORT=8080
+    - MONGO_SERVER=mongodb
+    - MONGO_DB_NAME=tracking_passes_db
+    # - SLACK_POST_URL=<url>
     ports:
     - 8080:8080
   mongo:

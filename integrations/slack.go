@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gavincmartin/rotor-control-service/passes"
+	"github.com/spf13/viper"
 )
 
 var loc, _ = time.LoadLocation("America/Chicago")
@@ -15,7 +15,7 @@ var loc, _ = time.LoadLocation("America/Chicago")
 // SendSlackSchedule POSTs a slice of TrackingPass structs to a specified
 // slack URL in a schedule format
 func SendSlackSchedule(schedule []passes.TrackingPass) {
-	slackPOSTUrl := os.Getenv("SLACK_POST_URL")
+	slackPOSTUrl := viper.GetString("SlackPOSTUrl")
 	if len(slackPOSTUrl) == 0 {
 		return
 	}
