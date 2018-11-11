@@ -32,8 +32,7 @@ The service should be running at localhost on port 8080.
 1) Clone this repository (`git clone https://github.com/gavincmartin/rotor-control-service.git`)
 2) Install [MongoDB](https://docs.mongodb.com/manual/installation/)
 3) Run MongoDB on your local machine (see the installation docs above for the guide for your OS)
-4) Change `"mongodb"` to `"localhost"` as the server value in your `config.toml` file
-5) Run the service (`go run service.go`)
+4) Run the service (`go run service.go`)
 
 The service should be running at localhost on port 8080.
 
