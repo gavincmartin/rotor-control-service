@@ -1,10 +1,11 @@
 package passes
 
 import (
-	mgo "github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"log"
 	"time"
+
+	mgo "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 // DAO is the data access object for interacting with TrackingPass structs

@@ -2,16 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/gavincmartin/rotor-control-service/config"
-	"github.com/gavincmartin/rotor-control-service/executor"
-	"github.com/gavincmartin/rotor-control-service/passes"
-	"github.com/gavincmartin/rotor-control-service/rotor"
-	"github.com/globalsign/mgo/bson"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gavincmartin/rotor-control-service/config"
+	"github.com/gavincmartin/rotor-control-service/executor"
+	"github.com/gavincmartin/rotor-control-service/integrations"
+	"github.com/gavincmartin/rotor-control-service/passes"
+	"github.com/gavincmartin/rotor-control-service/rotor"
+	"github.com/globalsign/mgo/bson"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -63,8 +65,13 @@ func port() string {
 
 // TestEndpoint allows me to test methods' behavior
 func TestEndpoint(w http.ResponseWriter, r *http.Request) {
-	abortPass()
+	schedule, err := db.FindAll()
+	if err != nil {
+		panic(err)
+	}
+	integrations.SendSlackSchedule(schedule)
 	w.WriteHeader(http.StatusOK)
+
 }
 
 // GetRotorStateEndpoint delivers the Rotor's State upon a GET request
@@ -93,7 +100,7 @@ func GetPassesEndpoint(w http.ResponseWriter, r *http.Request) {
 		results, err = db.FindAll()
 	} else {
 		// Build the query
-		var query bson.M = make(bson.M)
+		query := make(bson.M)
 		if val, ok := q["spacecraft"]; ok {
 			query["spacecraft"] = val[0]
 		}

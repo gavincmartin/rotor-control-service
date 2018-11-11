@@ -1,10 +1,11 @@
 package executor
 
 import (
-	"github.com/gavincmartin/rotor-control-service/passes"
-	"github.com/gavincmartin/rotor-control-service/rotor"
 	"math"
 	"time"
+
+	"github.com/gavincmartin/rotor-control-service/passes"
+	"github.com/gavincmartin/rotor-control-service/rotor"
 )
 
 // Executor stores the relevant rotor controller object, the database in which
