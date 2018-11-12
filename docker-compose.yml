@@ -10,6 +10,7 @@ services:
     - MONGO_DB_NAME=tracking_passes_db
     # replace with your actual Slack webhook
     - SLACK_POST_URL=https://api.slack.com/methods/api.test
+    - SLACK_SCHEDULE_POST_TIME=15:00
     ports:
     - 8080:8080
   mongo:

@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,6 +15,7 @@ import (
 	"github.com/gavincmartin/rotor-control-service/rotor"
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
+	"github.com/robfig/cron"
 	"github.com/spf13/viper"
 )
 
@@ -47,6 +50,8 @@ func init() {
 	viper.BindEnv("Port", "PORT")
 	viper.SetDefault("SlackPOSTUrl", "")
 	viper.BindEnv("SlackPOSTUrl", "SLACK_POST_URL")
+	viper.SetDefault("SlackSchedulePOSTTime", "09:00 America/Chicago")
+	viper.BindEnv("SlackSchedulePOSTTime", "SLACK_SCHEDULE_POST_TIME")
 
 	db.Server = viper.GetString("MongoServer")
 	db.Database = viper.GetString("MongoDatabaseName")
@@ -57,8 +62,12 @@ func init() {
 		panic(err)
 	}
 
+	// start the executor
 	passTracker = executor.Executor{Rotctl: &rotctl, DB: db, Updates: updates, AbortCommands: abortCommands, NextPass: nextPass}
 	go passTracker.Run()
+
+	// schedule a cron job to send daily schedules via Slack
+	scheduleSlackCronJob()
 }
 
 // TestEndpoint allows me to test methods' behavior
@@ -223,4 +232,27 @@ func abortPass() {
 	if passTracker.Engaged {
 		abortCommands <- struct{}{}
 	}
+}
+
+func scheduleSlackCronJob() {
+	dailySendTime, err := time.Parse("15:04", viper.GetString("SlackSchedulePOSTTime"))
+	if err != nil {
+		log.Printf("Invalid SLACK_SCHEDULE_POST_TIME: %v\nCronJob not scheduled.", viper.GetString("SlackSchedulePOSTTime"))
+		return
+	}
+	slackScheduleCronJob := cron.New()
+	sendDailySchedule := func() {
+		fmt.Println("CronJob executing")
+		query := make(bson.M)
+		now := time.Now()
+		query["start_time"] = bson.M{"$gte": now, "$lte": now.Add(time.Hour * 24)}
+		results, err := db.FindByQuery(query)
+		if err != nil {
+			panic(err)
+		}
+		integrations.SendSlackSchedule(results)
+	}
+	cronSpec := fmt.Sprintf("0 %d %d * * *", dailySendTime.Minute(), dailySendTime.Hour())
+	slackScheduleCronJob.AddFunc(cronSpec, sendDailySchedule)
+	slackScheduleCronJob.Start()
 }
