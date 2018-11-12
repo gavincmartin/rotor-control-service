@@ -27,12 +27,33 @@ func SendSlackSchedule(schedule []passes.TrackingPass) {
 	defer resp.Body.Close()
 }
 
+// SendSlackPass POSTs a TrackingPass struct to a specified slack URL
+func SendSlackPass(pass passes.TrackingPass) {
+	slackPOSTUrl := viper.GetString("SlackPOSTUrl")
+	if len(slackPOSTUrl) == 0 {
+		return
+	}
+	payload := formatSinglePass(pass)
+	resp, err := http.Post(slackPOSTUrl, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+}
+
 func formatSchedule(schedule []passes.TrackingPass) []byte {
 	attachments := make([]attachment, len(schedule))
 	for i, pass := range schedule {
 		attachments[i] = passToAttachment(pass)
 	}
-	payload := slackPayload{Text: "Here's today's tracking schedule! :satellite_antenna: (sent from Go)", Attachments: attachments}
+	payload := slackPayload{Text: "Here's today's tracking schedule! :satellite_antenna:", Attachments: attachments}
+	return payload.ToJSON()
+}
+
+func formatSinglePass(pass passes.TrackingPass) []byte {
+	attachments := make([]attachment, 1)
+	attachments[0] = passToAttachment(pass)
+	payload := slackPayload{Text: "A pass is about to start! :satellite:", Attachments: attachments}
 	return payload.ToJSON()
 }
 

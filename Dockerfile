@@ -2,7 +2,7 @@
 FROM golang:1.11.0-alpine as builder
 
 # Install git
-RUN apk update && apk add git
+RUN apk update && apk add git && apk add tzdata
 
 COPY . $GOPATH/src/github.com/gavincmartin/rotor-control-service/
 WORKDIR $GOPATH/src/github.com/gavincmartin/rotor-control-service/
@@ -21,6 +21,10 @@ MAINTAINER Gavin C. Martin
 
 # Copy our static executable
 COPY --from=builder /go/bin/rotor-control-service /app/rotor-control-service
+
+# Install CA Certificates and copy timezone info from the builder
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
 WORKDIR /app
 ENTRYPOINT ["./rotor-control-service"]

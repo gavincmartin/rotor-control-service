@@ -8,7 +8,8 @@ services:
     - PORT=8080
     - MONGO_SERVER=mongodb
     - MONGO_DB_NAME=tracking_passes_db
-    # - SLACK_POST_URL=<url>
+    # replace with your actual Slack webhook
+    - SLACK_POST_URL=https://api.slack.com/methods/api.test
     ports:
     - 8080:8080
   mongo:

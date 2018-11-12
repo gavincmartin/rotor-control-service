@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/gavincmartin/rotor-control-service/integrations"
 	"github.com/gavincmartin/rotor-control-service/passes"
 	"github.com/gavincmartin/rotor-control-service/rotor"
 )
@@ -37,6 +38,7 @@ func (e *Executor) Run() {
 		default:
 			// if the next TrackingPass starts within 1 minute (and is in the future)
 			if time.Until(e.NextPass.StartTime) <= 1*time.Minute && time.Now().Before(e.NextPass.StartTime) && !e.Engaged {
+				integrations.SendSlackPass(e.NextPass)
 				e.engage()
 				go func() {
 					e.TrackPass(e.NextPass)
