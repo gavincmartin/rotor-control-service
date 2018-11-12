@@ -9,7 +9,7 @@ The software is written in Golang and runs as a single Linux binary with MongoDB
 - Scheduling of future tracking passes
 - Automatic execution of previously scheduled passes
 - Complex querying of past and future passes
-- (Coming Soon) Slack messaging for daily pass schedules and imminent passes
+- Slack notifications for daily pass schedules and imminent passes
 - (Coming Soon) Web interface for pass schedules
 
 
@@ -35,6 +35,9 @@ The service should be running at localhost on port 8080.
 4) Run the service (`go run service.go`)
 
 The service should be running at localhost on port 8080.
+
+## Configuration Options
+Coming soon...
 
 
 ## API Documentation
