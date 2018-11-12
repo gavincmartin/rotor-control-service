@@ -3,7 +3,9 @@ package integrations
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gavincmartin/rotor-control-service/passes"
@@ -63,11 +65,14 @@ type slackPayload struct {
 }
 
 func (p slackPayload) ToJSON() []byte {
-	jsonData, err := json.Marshal(p)
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(p)
 	if err != nil {
 		panic(err)
 	}
-	return jsonData
+	return buffer.Bytes()
 }
 
 type attachment struct {
@@ -76,10 +81,24 @@ type attachment struct {
 }
 
 func passToAttachment(pass passes.TrackingPass) attachment {
-	startField := field{Title: "start_time", Value: pass.StartTime.In(loc).Format(time.Kitchen), Short: true}
-	endField := field{Title: "end_time", Value: pass.Times[len(pass.Times)-1].In(loc).Format(time.Kitchen), Short: true}
+	endTime := pass.Times[len(pass.Times)-1]
+	calendarLink := generateCalendarLink(pass.Spacecraft, pass.StartTime, endTime)
+	startField := field{Title: "start_time", Value: timeToSlackFormat(pass.StartTime, calendarLink), Short: true}
+	endField := field{Title: "end_time", Value: timeToSlackFormat(endTime, calendarLink), Short: true}
 	fields := []field{startField, endField}
 	return attachment{Fields: fields, AuthorName: pass.Spacecraft}
+}
+
+func timeToSlackFormat(t time.Time, calendarLink string) string {
+	//ex: "<!date^1542004812^{date_short_pretty} at {time}^https://calendar.google.com/calendar/r/eventedit?text=My+Custom+Event&dates=20180512T230000Z/20180513T030000Z|8:39 AM (CT)>"
+	return fmt.Sprintf("<!date^%v^{date_short_pretty} at {time}^%v|%v (CT)>", t.Unix(), calendarLink, t.In(loc).Format(time.Kitchen))
+}
+
+func generateCalendarLink(spacecraft string, start, end time.Time) string {
+	title := strings.Replace(spacecraft+" Tracking Pass", " ", "+", -1)
+	timeFormat := "20060102T150405Z"
+	link := fmt.Sprintf("https://calendar.google.com/calendar/r/eventedit?text=%v&dates=%v/%v", title, start.Format(timeFormat), end.Format(timeFormat))
+	return link
 }
 
 type field struct {
