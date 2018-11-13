@@ -37,8 +37,14 @@ The service should be running at localhost on port 8080.
 The service should be running at localhost on port 8080.
 
 ## Configuration Options
-Coming soon...
+The service can be given a custom configuration by altering the environment variables in the [docker-compose.yml](https://github.com/gavincmartin/rotor-control-service/blob/master/docker-compose.yml) file (if running with Compose) or by manually setting environment variables prior to running it (if running locally).
 
+The configuration options are:
+1) `PORT`: the port on which the service listens
+2) `MONGO_SERVER`: the hostname of the MongoDB server you want to connect to. This should match the name of the MongoDB container you are running with Compose (`mongodb` by default), or can connect to your local MongoDB server at `localhost` or another specified address.
+3) `MONGO_DB_NAME`: the name of the tracking pass database used for this application (`tracking_passes_db` by default).
+4) `SLACK_POST_URL`: the URL of your Slack webhook that should receive POST requests from the service. This is where daily schedules and "pass starting" notifications will be sent. For information on configuring this for your Slack workspace, you can look at [Slack's API Documentation on Incoming Webhooks](https://api.slack.com/incoming-webhooks).
+5) `SLACK_SCHEDULE_POST_TIME`: the time that you'd like a daily schedule sent to the `SLACK_POST_URL` specified above. It should be in `HH:MM` format. It will schedule based upon what the local timezone of the machine running it is--if you are running in a container with Compose, you should supply the desired time in UTC.
 
 ## API Documentation
-Coming soon...
+Postman-generated documentation with example requests can be found [here](https://documenter.getpostman.com/view/5438849/RzZAkdf5).
